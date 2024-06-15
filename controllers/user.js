@@ -185,14 +185,14 @@ export const listUsers = async (req, res) => {
     const users = await User.paginate({}, options);
 
     //Si no hay usuario en la pagina solicitada 
-    if (!users || users.doc.length === 0){
+    if (!users || users.docs.length === 0){
       return res.status(404).send({
         status:"error",
         message:"No hay usuarios disponibles"
       });
     }
 
-    //Devolder los usuarios paginados 
+    //Devolver los usuarios paginados 
     return res.status(200).json({
       status: "success",
       users: users.docs,
@@ -203,8 +203,7 @@ export const listUsers = async (req, res) => {
       hasPrevPage: users.hasPrevPage,
       hasNextPage: users.hasNextPage,
       prevPage: users.prevPage,
-      nextPage: users.netxPage
-
+      nextPage: users.nextPage
     });
   } catch (error) {
     console.log("Error al listar los usuarios:", error);
