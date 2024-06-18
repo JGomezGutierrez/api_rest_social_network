@@ -4,6 +4,7 @@ import User from "../models/user.js"
 import bcrypt from "bcrypt";
 import { createToken } from "../services/jwt.js";
 import fs from "fs";
+import path from "path";
 
 // Acciones de prueba
 export const testUser = (req, res) => {
@@ -176,7 +177,7 @@ export const listUsers = async (req, res) => {
     let page = req.params.page ? parseInt(req.params.page, 10) : 1;
     let itemsPerPage = req.query.limit ? parseInt(req.query.limit, 10) : 5;
     
-    // Realizar la consulta paginada 
+    //Realizar la consulta paginada 
     const options = {
       page: page,
       limit: itemsPerPage,
@@ -271,7 +272,7 @@ export const updateUser = async (req, res)=>{
       delete userToUpdate.password;
     }
  
-    // Actualizar el usuario modificad
+    // Actualizar el usuario modificado
     let userUpdated = await User.findByIdAndUpdate(userIdenty.userId,userToUpdate, { new:
     true });
 
@@ -308,7 +309,7 @@ try {
     });
   }
 
-  // Conseguie el nombre del archivo
+  // Conseguir el nombre del archivo
   let image = req.file.originalname;
 
   // obtener la extension del archivo
@@ -366,4 +367,33 @@ try {
     message:"Error al subir archivos",
   });
 }
+}
+
+// Método para Mostrar la imagen del perfil (AVATAR)
+export const avatar = async (req, res) => {
+  try {
+    //Obtener el parámetro de la url
+    const file = req.params.file;
+
+    //Obtener el path real
+    const filePath = "./uploads/avatars/" + file;
+
+    //Comprobamos si existe 
+    fs.stat(filePath, (error, exists) => {
+      if(!exists){
+        return res.status(404).send({
+          status:"error",
+          message:"No existe la imagen",
+        });
+      }
+      //Devolver el archivo
+      return res.sendFile(path.resolve(filePath));
+    });
+  } catch (error) {
+    console.log("Error al mostrar la imagen", error);
+    return res.status(500).send({
+      status:"error",
+      message:"Error al mostrar la imagen",
+    });
+  }
 }
