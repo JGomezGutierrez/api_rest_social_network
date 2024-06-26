@@ -1,9 +1,11 @@
 //importaciones
 import { Router } from "express";
 const router = Router();
-import { register, testUser, login, profile, listUsers, updateUser, uploadFiles, avatar } from "../controllers/user.js"
+import { register, testUser, login, profile, listUsers, updateUser, uploadFiles, avatar, counters } from "../controllers/user.js"
 import { ensureAuth } from "../middlewares/authentication.js";
 import multer from "multer";
+import User from "../models/user.js"
+import { checkEntityExists } from "../middlewares/checkEntityExists.js";
 
 // Configuracion de subida de archivos
 const storage = multer.diskStorage({
@@ -25,8 +27,9 @@ router.post('/login', login );
 router.get('/profile/:id', ensureAuth, profile);
 router.get('/list/:page?', ensureAuth, listUsers);
 router.put('/update', ensureAuth, updateUser);
-router.post('/upload', [ensureAuth, uploads.single("file0")], uploadFiles)
-router.get('/avatar/:file', ensureAuth, avatar);
+router.post('/upload', [ensureAuth, checkEntityExists(User, 'user_id'), uploads.single("file0")], uploadFiles);
+router.get('/avatar/:file', avatar);
+router.get('/counters/:id?', ensureAuth, counters);
 
 //Exportar el Router
 export default router;

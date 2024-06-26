@@ -1,5 +1,7 @@
 
 import status from "express/lib/response.js";
+import Follow from "../models/follows.js";
+import Publication from "../models/publication.js";
 import User from "../models/user.js"
 import bcrypt from "bcrypt";
 import { createToken } from "../services/jwt.js";
@@ -154,7 +156,7 @@ export const profile = async (req, res) => {
     }
 
     // Buscar al usuario en la BD, excluimos la contraseña, rol, versión.
-    const userProfile = await User.findById(userId).select('-password -role -__v');
+    const userProfile = await User.findById(userId).select('-password -role -__v -email');
 
     // Verificar si el usuario existe
     if (!userProfile) {
@@ -184,7 +186,6 @@ export const profile = async (req, res) => {
 }
 
 
-
 // Método para listar usuarios con paginación
 export const listUsers = async (req, res) => {
   try {
@@ -196,7 +197,7 @@ export const listUsers = async (req, res) => {
     const options = {
       page: page,
       limit: itemsPerPage,
-      select: '-password -role -__v'
+      select: '-password -role -__v -email'
     };
 
     const users = await User.paginate({}, options);
@@ -414,6 +415,56 @@ export const avatar = async (req, res) => {
     return res.status(500).send({
       status:"error",
       message:"Error al mostrar la imagen",
+    });
+  }
+}
+
+// Método para mostrar el contador de seguidores
+export const counters = async (req, res) => {
+  try {
+    // Obtener el id del usuarios autenticado desde el token
+    let userId = req.user.userId;
+
+    // En caso de llegar el id del usuario en los parametros (por la url) se toma como prioritario
+    if (req.params.id){
+      userId = req.params.id;
+    }
+
+    // Buscar el usuario por su userId para obtener nombre y apellido
+    const user = await User.findById(userId, { name: 1, last_name: 1});
+
+    // Si no encuentra al usuario
+    if (!user){
+      return res.status(404).send({
+        status: "error",
+        message: "Usuario no encontrado"
+      });
+    }
+
+    // Contar el número de usuarios que yo sigo (o el usuario autenticado)
+    const followingCount = await Follow.countDocuments({ "following_user": userId });
+    
+    // Contar el número de usuarios que me siguen a mi (o al usuario autenticado)
+    const followedCount = await Follow.countDocuments({ "followed_user": userId });
+    
+    // Contar el número de publicaciones que ha realizado el usuario
+    const publicationsCount = await Publication.countDocuments({ "user_id": userId });
+
+    // Devolver respuesta exitosa 
+    return res.status(200).json({
+      status: "success",
+      userId,
+      name: user.name,
+      last_name: user.last_name,
+      following: followingCount,
+      followed: followedCount,
+      publications: publicationsCount
+    });
+
+  } catch (error) {
+    return res.status(500).send({
+      status: "error",
+      message: "Error en los contadores"
     });
   }
 }
