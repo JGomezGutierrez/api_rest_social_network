@@ -22,7 +22,7 @@ const uploads = multer({storage}) ;
 
 //Definir las rutas 
 router.get('/test-user', ensureAuth, testUser );
-router.post('/register', register,);
+router.post('/register', register);
 router.post('/login', login );
 router.get('/profile/:id', ensureAuth, profile);
 router.get('/list/:page?', ensureAuth, listUsers);

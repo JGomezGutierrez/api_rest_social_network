@@ -71,6 +71,7 @@ export const register = async (req, res) => {
       message: "Error en registro de usuarios"
     });
 
+
   }
 }
 
@@ -156,7 +157,7 @@ export const profile = async (req, res) => {
     }
 
     // Buscar al usuario en la BD, excluimos la contraseña, rol, versión.
-    const userProfile = await User.findById(userId).select('-password -role -__v -email');
+    const userProfile = await User.findById(userId).select('-password -role -__v');
 
     // Verificar si el usuario existe
     if (!userProfile) {
